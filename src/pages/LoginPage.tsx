@@ -123,7 +123,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
                     </form>
                 </div>
                 
-                <p className="mt-8 text-center text-sm text-slate-500 flex flex-col gap-3">
+                <div className="mt-8 text-center text-sm text-slate-500 flex flex-col gap-3">
                     <div>
                         Não tem uma conta?
                         <button onClick={() => onNavigate('register')} className="font-medium text-[#136dec] hover:text-blue-400 transition-colors ml-1">Solicitar cadastro</button>
@@ -141,7 +141,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
                             Problemas ao entrar? Resetar conexão e cookies
                         </button>
                     </div>
-                </p>
+                </div>
             </div>
         </div>
     );

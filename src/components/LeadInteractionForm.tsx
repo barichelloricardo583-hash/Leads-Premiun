@@ -79,23 +79,20 @@ export const LeadInteractionForm: React.FC<LeadInteractionFormProps> = ({ lead, 
 
             // 1.1 Create a meeting if scheduled
             if (scheduleNextStep) {
-                const { data: userData } = await supabase.auth.getUser();
-                if (userData.user) {
-                    await supabase
-                        .from('meetings')
-                        .insert([{
-                            user_id: userData.user.id,
-                            lead_id: lead.id,
-                            lead_name: lead.name,
-                            lead_company: lead.company,
-                            date: nextDate,
-                            time: `${nextTime}:00`,
-                            status: 'Pendente',
-                            link_type: 'none',
-                            link_url: 'Aguardando definição',
-                            description: notes
-                        }]);
-                }
+                await supabase
+                    .from('meetings')
+                    .insert([{
+                        user_id: user.id,
+                        lead_id: lead.id,
+                        lead_name: lead.name,
+                        lead_company: lead.company,
+                        date: nextDate,
+                        time: `${nextTime}:00`,
+                        status: 'Pendente',
+                        link_type: 'none',
+                        link_url: 'Aguardando definição',
+                        description: notes
+                    }]);
             }
 
             // 2. Update Lead status and last interaction
