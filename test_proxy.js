@@ -4,6 +4,7 @@ const key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZi
 
 async function testProxy() {
     console.log("Testing proxy at http://localhost:3001/supabase-proxy...");
+
     try {
         const response = await fetch(url, {
             headers: {

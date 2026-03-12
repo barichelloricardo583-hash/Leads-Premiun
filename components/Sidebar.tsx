@@ -105,6 +105,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ user, currentView, onChangeVie
                         <img
                             src={user?.avatar || IMAGES.AVATAR_USER}
                             alt="Advisor Avatar"
+
                             onError={(e) => {
                                 (e.target as HTMLImageElement).src = IMAGES.AVATAR_USER;
                             }}
@@ -115,6 +116,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ user, currentView, onChangeVie
                     <div className="flex-1 min-w-0 text-left">
                         <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{user?.name || 'Usuário'}</p>
                         <p className="text-xs text-slate-500 truncate">{roleLabel[user?.role || ''] || 'Assessor'}</p>
+
                     </div>
                     <button onClick={onLogout} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
                         <LogOut size={18} />

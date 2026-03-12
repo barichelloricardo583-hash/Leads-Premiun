@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
+<<<<<<< HEAD
 import type { Session } from '@supabase/supabase-js';
+=======
+>>>>>>> 2e41b016454922055f038ea3c7bbec4cfe762e51
 import { Sidebar } from './components/Sidebar';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
@@ -11,6 +14,7 @@ import { AnalyticsPage } from './pages/AnalyticsPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { AppView, IMAGES } from './constants';
 import { supabase } from './lib/supabase';
+<<<<<<< HEAD
 import { User } from './types';
 
 const DEFAULT_USER: User = {
@@ -21,10 +25,13 @@ const DEFAULT_USER: User = {
   phone: '',
   avatar: IMAGES.AVATAR_USER
 };
+=======
+>>>>>>> 2e41b016454922055f038ea3c7bbec4cfe762e51
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<AppView>('login');
   const [leadsFilter, setLeadsFilter] = useState<string>('novos');
+<<<<<<< HEAD
   const [user, setUser] = useState(DEFAULT_USER);
   const [loadingSession, setLoadingSession] = useState(true);
 
@@ -40,6 +47,24 @@ const App: React.FC = () => {
       avatar: session.user?.user_metadata?.avatar_url || IMAGES.AVATAR_USER
     };
   };
+=======
+  const [user, setUser] = useState({
+    name: 'Carregando...',
+    email: '',
+    role: '',
+    phone: '',
+    avatar: IMAGES.AVATAR_USER
+  });
+  const [loadingSession, setLoadingSession] = useState(true);
+
+  const mapUserSession = (session: any) => ({
+    name: session?.user?.user_metadata?.full_name || 'Usuário',
+    email: session?.user?.email || '',
+    role: session?.user?.user_metadata?.role || 'admin',
+    phone: session?.user?.user_metadata?.phone || '',
+    avatar: session?.user?.user_metadata?.avatar_url || IMAGES.AVATAR_USER
+  });
+>>>>>>> 2e41b016454922055f038ea3c7bbec4cfe762e51
 
   React.useEffect(() => {
     // Check initial session
@@ -59,10 +84,13 @@ const App: React.FC = () => {
     } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) {
         setUser(mapUserSession(session));
+<<<<<<< HEAD
         if (currentView === 'login') setCurrentView('leads');
       } else {
         setUser(DEFAULT_USER);
         setCurrentView('login');
+=======
+>>>>>>> 2e41b016454922055f038ea3c7bbec4cfe762e51
       }
     });
 
@@ -82,6 +110,7 @@ const App: React.FC = () => {
   const renderView = () => {
     switch (currentView) {
       case 'leads':
+<<<<<<< HEAD
         return <LeadsPage key={`leads-${leadsFilter}`} initialFilter={leadsFilter} user={user} />;
       case 'performance':
         return <PerformancePage onNavigateLeads={handleNavigateWithFilter} user={user} />;
@@ -106,6 +135,24 @@ const App: React.FC = () => {
     );
   }
 
+=======
+        return <LeadsPage key={`leads-${leadsFilter}`} initialFilter={leadsFilter} />;
+      case 'performance':
+        return <PerformancePage onNavigateLeads={handleNavigateWithFilter} />;
+      case 'analytics':
+        return <AnalyticsPage user={user} />;
+      case 'meetings':
+        return <MeetingsPage />;
+      case 'import':
+        return <ImportLeadsPage onNavigate={setCurrentView} />;
+      case 'settings':
+        return <SettingsPage user={user} onUpdateUser={setUser} />;
+      default:
+        return <LeadsPage initialFilter={leadsFilter} />;
+    }
+  };
+
+>>>>>>> 2e41b016454922055f038ea3c7bbec4cfe762e51
   if (currentView === 'login') {
     return <LoginPage onNavigate={setCurrentView} />;
   }
@@ -114,6 +161,17 @@ const App: React.FC = () => {
     return <RegisterPage onNavigate={setCurrentView} />;
   }
 
+<<<<<<< HEAD
+=======
+  if (loadingSession) {
+      return (
+          <div className="min-h-screen flex items-center justify-center bg-[#101822] text-white">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+          </div>
+      );
+  }
+
+>>>>>>> 2e41b016454922055f038ea3c7bbec4cfe762e51
   return (
     <div className="flex h-screen bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-100 font-display">
       <Sidebar 
