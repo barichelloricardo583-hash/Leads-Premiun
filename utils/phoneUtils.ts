@@ -12,7 +12,7 @@ export const getStateFromPhone = (phone: string): string => {
         ddd = parenMatch[1];
     } else {
         // Remove +55 prefix and country code variations, then grab next 2 digits
-        const cleaned = phone.repla ce(/^\+?55\s*/, '').replace(/\D/g, '');
+        const cleaned = phone.replace(/^\+?55\s*/, '').replace(/\D/g, '');
         ddd = cleaned.substring(0, 2);
     }
 
