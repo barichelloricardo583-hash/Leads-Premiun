@@ -377,8 +377,39 @@ export const MeetingsPage: React.FC<MeetingsPageProps> = ({ user }) => {
         }
     };
 
-    // Sincronização automática embutida nas ações de status acima
-    // handleGoogleSync removido conforme pedido (remoção de ação manual individual)
+    const handleEditLink = (meeting: Meeting) => {
+        setEditingMeeting(meeting);
+        setEditLinkType(meeting.link_type as any || 'google');
+        setEditCustomLink(meeting.link_url === 'Aguardando definição' ? '' : meeting.link_url);
+        setIsEditLinkModalOpen(true);
+        setOpenMenuIdx(null);
+    };
+
+    const handleSaveLink = async () => {
+        if (!editingMeeting) return;
+        
+        setSaving(true);
+        try {
+            const finalLink = editLinkType === 'google' ? 'meet.google.com/new' : 
+                             editLinkType === 'zoom' ? 'zoom.us/new' : editCustomLink;
+
+            const { error } = await supabase
+                .from('meetings')
+                .update({ 
+                    link_type: editLinkType,
+                    link_url: finalLink || 'Aguardando definição'
+                })
+                .eq('id', editingMeeting.id);
+
+            if (error) throw error;
+            setIsEditLinkModalOpen(false);
+            loadPageData();
+        } catch (error: any) {
+            alert('Erro ao salvar link: ' + error.message);
+        } finally {
+            setSaving(false);
+        }
+    };
 
     const filteredMeetings = [...meetings].sort((a, b) => {
         const order: Record<string, number> = {
@@ -570,9 +601,20 @@ export const MeetingsPage: React.FC<MeetingsPageProps> = ({ user }) => {
                                                 </a>
                                             )}
                                             {meeting.link_type === 'none' && (
-                                                <span className={`text-sm ${meeting.status === 'Cancelada' ? 'text-slate-400 line-through' : 'text-slate-400 italic'}`}>
-                                                    {meeting.link_url}
-                                                </span>
+                                                <div className="flex items-center gap-2">
+                                                    <span className={`text-sm ${meeting.status === 'Cancelada' ? 'text-slate-400 line-through' : 'text-slate-400 italic'}`}>
+                                                        {meeting.link_url}
+                                                    </span>
+                                                    {meeting.status !== 'Cancelada' && meeting.status !== 'Concluída' && (
+                                                        <button 
+                                                            onClick={() => handleEditLink(meeting)}
+                                                            className="p-1 rounded-md text-primary hover:bg-primary/10 transition-colors"
+                                                            title="Adicionar Link"
+                                                        >
+                                                            <Plus size={14} />
+                                                        </button>
+                                                    )}
+                                                </div>
                                             )}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right relative">
@@ -598,13 +640,22 @@ export const MeetingsPage: React.FC<MeetingsPageProps> = ({ user }) => {
                                                         </button>
                                                     )}
                                                     {meeting.status !== 'Concluída' && meeting.status !== 'Cancelada' && (
-                                                        <button 
-                                                            onClick={() => handleFinishMeeting(meeting)}
-                                                            className="w-full flex items-center gap-3 px-4 py-2 text-sm text-primary hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-                                                        >
-                                                            <Calendar size={14} />
-                                                            Finalizar Reunião
-                                                        </button>
+                                                        <>
+                                                            <button 
+                                                                onClick={() => handleFinishMeeting(meeting)}
+                                                                className="w-full flex items-center gap-3 px-4 py-2 text-sm text-primary hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                                                            >
+                                                                <Calendar size={14} />
+                                                                Finalizar Reunião
+                                                            </button>
+                                                            <button 
+                                                                onClick={() => handleEditLink(meeting)}
+                                                                className="w-full flex items-center gap-3 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                                                            >
+                                                                <Edit2 size={14} />
+                                                                Editar Link da Chamada
+                                                            </button>
+                                                        </>
                                                     )}
                                                     <div className="my-1 border-t border-slate-100 dark:border-slate-800"></div>
                                                     <button 
@@ -790,6 +841,80 @@ export const MeetingsPage: React.FC<MeetingsPageProps> = ({ user }) => {
                                 className="px-4 py-2 rounded-lg text-sm font-medium bg-primary text-white hover:bg-primary-dark shadow-md shadow-primary/20 transition-colors disabled:opacity-50"
                             >
                                 {saving ? 'Salvando...' : 'Salvar Resultado'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* Modal de Editar Link */}
+            {isEditLinkModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center">
+                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={() => setIsEditLinkModalOpen(false)}></div>
+                    <div className="relative bg-white dark:bg-surface-dark rounded-xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden border border-slate-200 dark:border-slate-700 animate-fade-in-up">
+                        <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
+                            <div>
+                                <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Definir Link da Chamada</h3>
+                                <p className="text-xs text-slate-500">{editingMeeting?.lead_name}</p>
+                            </div>
+                            <button className="text-slate-400 hover:text-slate-500 dark:hover:text-slate-300" onClick={() => setIsEditLinkModalOpen(false)}>
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <div className="p-6 space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Tipo de Link</label>
+                                <div className="grid grid-cols-3 gap-3">
+                                    <button 
+                                        onClick={() => setEditLinkType('google')}
+                                        className={`px-3 py-2 rounded-lg text-xs font-medium border transition-all flex items-center justify-center gap-2 ${editLinkType === 'google' ? 'bg-primary/10 border-primary text-primary' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400'}`}
+                                    >
+                                        <img src={IMAGES.MEET_ICON} alt="" className="w-3 h-3" />
+                                        Meet
+                                    </button>
+                                    <button 
+                                        onClick={() => setEditLinkType('zoom')}
+                                        className={`px-3 py-2 rounded-lg text-xs font-medium border transition-all flex items-center justify-center gap-2 ${editLinkType === 'zoom' ? 'bg-primary/10 border-primary text-primary' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400'}`}
+                                    >
+                                        <img src={IMAGES.ZOOM_ICON} alt="" className="h-2" />
+                                        Zoom
+                                    </button>
+                                    <button 
+                                        onClick={() => setEditLinkType('manual')}
+                                        className={`px-3 py-2 rounded-lg text-xs font-medium border transition-all flex items-center justify-center gap-2 ${editLinkType === 'manual' ? 'bg-primary/10 border-primary text-primary' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400'}`}
+                                    >
+                                        <MoreVertical size={12} />
+                                        Manual
+                                    </button>
+                                </div>
+                            </div>
+                            {(editLinkType === 'manual' || editLinkType === 'google' || editLinkType === 'zoom') && (
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                                        {editLinkType === 'manual' ? 'Link Personalizado' : 'Link de Acesso'}
+                                    </label>
+                                    <input 
+                                        type="text" 
+                                        value={editCustomLink}
+                                        onChange={(e) => setEditCustomLink(e.target.value)}
+                                        placeholder={editLinkType === 'manual' ? "https://..." : "Opcional: link específico"}
+                                        className="w-full rounded-lg border-slate-300 dark:border-slate-700 bg-white dark:bg-background-dark text-slate-900 dark:text-white focus:ring-primary focus:border-primary shadow-sm py-2 px-3 text-sm" 
+                                    />
+                                    {editLinkType !== 'manual' && !editCustomLink && (
+                                        <p className="mt-1 text-[10px] text-slate-500 italic">
+                                            Se vazio, usará o link padrão de criação de nova sala.
+                                        </p>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                        <div className="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-700 flex justify-end gap-3">
+                            <button className="px-4 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" onClick={() => setIsEditLinkModalOpen(false)}>Cancelar</button>
+                            <button 
+                                onClick={handleSaveLink}
+                                disabled={saving}
+                                className="px-4 py-2 rounded-lg text-sm font-medium bg-primary text-white hover:bg-primary-dark shadow-md shadow-primary/20 transition-colors disabled:opacity-50"
+                            >
+                                {saving ? 'Salvando...' : 'Atualizar Link'}
                             </button>
                         </div>
                     </div>
