@@ -92,11 +92,13 @@ export const LeadsPage: React.FC<LeadsPageProps> = ({ initialFilter, user }) => 
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [user.id]);
 
     useEffect(() => {
-        fetchLeads();
-    }, [fetchLeads]);
+        if (user.id) {
+            fetchLeads();
+        }
+    }, [fetchLeads, user.id]);
 
     // Leads fetch is now dynamic
 

@@ -161,11 +161,13 @@ export const PerformancePage: React.FC<PerformancePageProps> = ({ onNavigateLead
         } finally {
             setLoading(false);
         }
-    }, [selectedPeriod]);
+    }, [selectedPeriod, user.id]);
 
     useEffect(() => {
-        fetchData();
-    }, [fetchData]);
+        if (user.id) {
+            fetchData();
+        }
+    }, [fetchData, user.id]);
 
     const data = kpiData;
 
