@@ -41,12 +41,20 @@ const App: React.FC = () => {
     };
   };
 
+  const currentViewRef = React.useRef(currentView);
+  useEffect(() => {
+    currentViewRef.current = currentView;
+  }, [currentView]);
+
   useEffect(() => {
     // Check initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         setUser(mapUserSession(session));
-        setCurrentView('leads');
+        // Only redirect to dashboard if we are currently on the login or register page
+        if (currentViewRef.current === 'login' || currentViewRef.current === 'register') {
+          setCurrentView('performance');
+        }
       } else {
         setCurrentView('login');
       }
@@ -58,8 +66,12 @@ const App: React.FC = () => {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) {
-        setUser(mapUserSession(session));
-        if (currentView === 'login') setCurrentView('leads');
+        const newUser = mapUserSession(session);
+        setUser(newUser);
+        // Only redirect on login if coming from login or register
+        if (currentViewRef.current === 'login' || currentViewRef.current === 'register') {
+          setCurrentView('performance');
+        }
       } else {
         setUser(DEFAULT_USER);
         setCurrentView('login');
@@ -67,7 +79,7 @@ const App: React.FC = () => {
     });
 
     return () => subscription.unsubscribe();
-  }, [currentView]);
+  }, []);
 
   const handleNavigateWithFilter = (view: AppView, filter: string) => {
     setCurrentView(view);
